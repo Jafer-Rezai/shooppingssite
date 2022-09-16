@@ -6,10 +6,13 @@ put melons in a shopping cart.
 Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
-from flask import Flask, render_template, redirect, flash
+import email
+from urllib import request
+from flask import Flask, render_template, redirect, flash, session, request
 import jinja2
 
 import melons
+
 
 app = Flask(__name__)
 
@@ -25,6 +28,9 @@ app.jinja_env.undefined = jinja2.StrictUndefined
 # This configuration option makes the Flask interactive debugger
 # more useful (you should remove this line in production though)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
+
+
+
 
 
 @app.route("/")
@@ -50,7 +56,7 @@ def show_melon(melon_id):
     Show all info about a melon. Also, provide a button to buy that melon.
     """
 
-    melon = melons.get_by_id("meli")
+    melon = melons.get_by_id(melon_id)
     print(melon)
     return render_template("melon_details.html",
                            display_melon=melon)
@@ -65,8 +71,10 @@ def show_shopping_cart():
     # The logic here will be something like:
     #
     # - get the cart dictionary from the session
+    order_total = 0
     # - create a list to hold melon objects and a variable to hold the total
     #   cost of the order
+    cart_melons = []
     # - loop over the cart dictionary, and for each melon id:
     #    - get the corresponding Melon object
     #    - compute the total cost for that type of melon
@@ -78,7 +86,7 @@ def show_shopping_cart():
     # Make sure your function can also handle the case wherein no cart has
     # been added to the session
 
-    return render_template("cart.html")
+    return render_template("cart.html", cart=cart_melons, order_total=order_total)
 
 
 @app.route("/add_to_cart/<melon_id>")
@@ -119,7 +127,6 @@ def process_login():
     """
 
     # TODO: Need to implement this!
-
     # The logic here should be something like:
     #
     # - get user-provided name and password from request.form
@@ -133,6 +140,13 @@ def process_login():
     # - do the same if a Customer with that email doesn't exist
 
     return "Oops! This needs to be implemented"
+
+
+@app.route("/logout")
+def process_logout():
+    del session["logged_in_customer_email"]
+    flsh("logged out.")
+    return  redirect("/melons")
 
 
 @app.route("/checkout")
